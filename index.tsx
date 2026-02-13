@@ -28,10 +28,8 @@ import {
   Zap
 } from 'lucide-react';
 
-// --- Constants for Gemini ---
 const TEXT_MODEL = 'gemini-3-flash-preview';
 const IMAGE_MODEL = 'gemini-2.5-flash-image';
-const VIDEO_MODEL = 'veo-3.1-fast-generate-preview';
 const LIVE_MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025';
 
 interface Message {
@@ -41,18 +39,14 @@ interface Message {
   type: 'text' | 'image' | 'video' | 'live';
   groundingMetadata?: any;
   timestamp: number;
-  status?: 'processing' | 'ready' | 'error';
-  operationId?: string;
 }
 
-export default function LuminaryStudio() {
+export default function AniloStudio() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'videos' | 'live'>('chat');
-  const [hasApiKey, setHasApiKey] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'live'>('chat');
   const [isLive, setIsLive] = useState(false);
-  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const liveSessionRef = useRef<any>(null);
@@ -63,21 +57,10 @@ export default function LuminaryStudio() {
   const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const checkKey = async () => {
-      if (typeof window !== 'undefined' && (window as any).aistudio) {
-        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-        setHasApiKey(hasKey);
-      }
-    };
-    checkKey();
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log("Location access denied", err)
-      );
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
-  }, []);
+  }, [messages, isLoading]);
 
   const drawWaveform = useCallback(() => {
     if (!canvasRef.current || !analyserRef.current) return;
@@ -113,12 +96,6 @@ export default function LuminaryStudio() {
     if (isLive) drawWaveform();
     else if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
   }, [isLive, drawWaveform]);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-    }
-  }, [messages, isLoading]);
 
   const encodeAudio = (bytes: Uint8Array) => {
     let binary = '';
@@ -230,42 +207,90 @@ export default function LuminaryStudio() {
   };
 
   return (
-    <div className="flex h-screen bg-[#050505] text-slate-100 overflow-hidden">
+    <div className="flex h-screen bg-[#050505] text-slate-100 overflow-hidden font-sans">
+      {/* Sidebar - Desktop Only */}
       <aside className="hidden md:flex w-72 bg-[#0a0a0a] border-r border-amber-900/20 flex-col p-6 space-y-8">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center"><Flame className="text-black" /></div>
-          <h1 className="text-xl font-black italic uppercase">Anilo AI</h1>
+          <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20"><Flame className="text-black" /></div>
+          <h1 className="text-xl font-black italic uppercase tracking-tighter">Anilo AI</h1>
         </div>
         <nav className="flex-1 space-y-2">
-          <NavItem active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} icon={<Bot size={18} />} label="Chat" />
-          <NavItem active={activeTab === 'live'} onClick={() => setActiveTab('live')} icon={<Activity size={18} />} label="Live" />
-          <NavItem active={activeTab === 'images'} onClick={() => setActiveTab('images')} icon={<ImageIcon size={18} />} label="Images" />
+          <NavItem active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} icon={<Bot size={18} />} label="Muloqot" />
+          <NavItem active={activeTab === 'live'} onClick={() => setActiveTab('live')} icon={<Activity size={18} />} label="Jonli Ovoz" />
+          <NavItem active={activeTab === 'images'} onClick={() => setActiveTab('images')} icon={<ImageIcon size={18} />} label="Tasvirlar" />
         </nav>
+        {isLive && (
+          <div className="bg-amber-500/5 p-4 rounded-3xl border border-amber-500/20">
+            <canvas ref={canvasRef} width={200} height={40} className="w-full" />
+          </div>
+        )}
       </aside>
+
+      {/* Main UI */}
       <main className="flex-1 flex flex-col relative bg-[#020202]">
-        <header className="h-20 flex items-center justify-between px-6 border-b border-white/5 backdrop-blur-xl bg-black/40">
-          <span className="text-amber-500 font-black uppercase text-xs tracking-widest">{activeTab} mode</span>
+        <header className="h-16 md:h-20 flex items-center justify-between px-6 border-b border-white/5 backdrop-blur-xl bg-black/40">
+          <div className="flex items-center space-x-3">
+             <div className="md:hidden w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center"><Flame size={16} className="text-black" /></div>
+             <span className="text-amber-500 font-black uppercase text-[10px] tracking-[0.2em]">{activeTab} node</span>
+          </div>
           {activeTab === 'live' && (
-            <button onClick={startLiveSession} className={`px-6 py-2 rounded-full font-bold text-xs uppercase ${isLive ? 'bg-red-500 text-white' : 'bg-amber-500 text-black'}`}>
-              {isLive ? 'Stop' : 'Start Live'}
+            <button onClick={startLiveSession} className={`px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${isLive ? 'bg-red-500 text-white animate-pulse' : 'bg-amber-500 text-black shadow-lg shadow-amber-500/30'}`}>
+              {isLive ? 'Stop Link' : 'Connect Live'}
             </button>
           )}
         </header>
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8">
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
+          {messages.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-40">
+              <Bot size={64} className="text-amber-500" />
+              <div className="space-y-2">
+                <h2 className="text-2xl font-black uppercase italic">Anilo OS</h2>
+                <p className="text-xs uppercase tracking-[0.3em]">Neural System Active</p>
+              </div>
+            </div>
+          )}
           {messages.map(m => (
-            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-6 rounded-[32px] ${m.role === 'user' ? 'bg-amber-600' : 'bg-[#0a0a0a] border border-white/5'}`}>
-                {m.type === 'text' && <p className="text-[16px] leading-relaxed">{m.content}</p>}
-                {m.type === 'image' && <img src={m.content} className="rounded-2xl w-full" />}
+            <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4`}>
+              <div className={`max-w-[90%] md:max-w-[80%] p-5 md:p-6 rounded-[28px] ${m.role === 'user' ? 'bg-amber-600 text-white shadow-xl' : 'bg-[#0f0f0f] border border-white/5'}`}>
+                {m.type === 'text' && <p className="text-[15px] md:text-[16px] leading-relaxed font-medium">{m.content}</p>}
+                {m.type === 'image' && <img src={m.content} className="rounded-2xl w-full shadow-2xl border border-white/10" />}
+                {m.groundingMetadata?.groundingChunks && (
+                  <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                    {m.groundingMetadata.groundingChunks.map((c: any, i: number) => (
+                      (c.web || c.maps) && (
+                        <a key={i} href={c.web?.uri || c.maps?.uri} target="_blank" className="flex items-center justify-between bg-white/5 p-3 rounded-xl hover:bg-white/10 transition-colors">
+                          <span className="text-[10px] uppercase font-bold truncate pr-4">{c.web?.title || c.maps?.title}</span>
+                          <ExternalLink size={12} className="text-amber-500" />
+                        </a>
+                      )
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
           {isLoading && <Loader2 className="animate-spin text-amber-500 mx-auto" />}
         </div>
-        <div className="p-6">
-          <div className="max-w-4xl mx-auto flex items-end space-x-4 bg-[#0d0d0d] rounded-[32px] p-2 border border-white/10">
-            <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Xabar yo'llang..." className="flex-1 bg-transparent border-none outline-none p-4 text-white resize-none" rows={1} />
-            <button onClick={handleSendMessage} className="p-4 bg-amber-500 rounded-2xl text-black"><Send size={20} /></button>
+
+        <div className="p-4 md:p-8 bg-gradient-to-t from-black to-transparent">
+          <div className="max-w-4xl mx-auto flex items-end space-x-3 bg-[#111] rounded-[32px] p-2 border border-white/5 shadow-2xl">
+            <textarea 
+              value={input} 
+              onChange={e => setInput(e.target.value)} 
+              placeholder="Xabar yozing..." 
+              className="flex-1 bg-transparent border-none outline-none p-4 text-white resize-none text-[15px] font-medium" 
+              rows={1} 
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+            />
+            <button onClick={handleSendMessage} disabled={!input.trim() || isLoading} className="p-4 bg-amber-500 rounded-[24px] text-black disabled:opacity-20 transition-all active:scale-90 shadow-lg shadow-amber-500/20">
+              <Send size={20} />
+            </button>
+          </div>
+          <div className="flex justify-center mt-4 space-x-8 opacity-20 md:hidden">
+             <Bot size={14} onClick={() => setActiveTab('chat')} className={activeTab === 'chat' ? 'text-amber-500 opacity-100' : ''} />
+             <Activity size={14} onClick={() => setActiveTab('live')} className={activeTab === 'live' ? 'text-amber-500 opacity-100' : ''} />
+             <ImageIcon size={14} onClick={() => setActiveTab('images')} className={activeTab === 'images' ? 'text-amber-500 opacity-100' : ''} />
           </div>
         </div>
       </main>
@@ -276,16 +301,8 @@ export default function LuminaryStudio() {
 function NavItem({ active, onClick, icon, label }: any) {
   return (
     <button onClick={onClick} className={`w-full flex items-center space-x-4 p-4 rounded-2xl transition-all ${active ? 'bg-amber-500/10 text-white' : 'text-slate-500 hover:bg-white/5'}`}>
-      <div className={`p-2 rounded-lg ${active ? 'bg-amber-500 text-black' : 'bg-black'}`}>{icon}</div>
-      <span className="font-bold text-sm uppercase">{label}</span>
-    </button>
-  );
-}
-
-function QuickAction({ label, onClick }: any) {
-  return (
-    <button onClick={onClick} className="bg-white/5 p-6 rounded-3xl text-xs font-black uppercase text-slate-400 hover:text-amber-500 border border-transparent hover:border-amber-500/30 transition-all">
-      {label}
+      <div className={`p-2 rounded-xl transition-all ${active ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/40' : 'bg-[#111]'}`}>{icon}</div>
+      <span className="font-black text-[11px] uppercase tracking-widest">{label}</span>
     </button>
   );
 }

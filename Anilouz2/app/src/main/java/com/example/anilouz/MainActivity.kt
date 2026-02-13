@@ -2,6 +2,7 @@
 package com.example.anilouz
 
 import android.os.Bundle
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             onClick = { showSettings = !showSettings },
                             modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
                         ) {
-                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                            Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
                         }
 
                         if (showSettings) {
@@ -69,29 +70,52 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AniloUzWebView(useDesktopMode: Boolean) {
+    // Desktop mode o'zgarganini eslab qolish uchun
+    val lastDesktopMode = remember { mutableStateOf(useDesktopMode) }
+
     AndroidView(factory = { context ->
         WebView(context).apply {
             webViewClient = WebViewClient()
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true // Sayt to'g'ri ishlashi uchun
+            webChromeClient = WebChromeClient() // Muhim: Sayt elementlari yuklanishi uchun
+            
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                databaseEnabled = true
+                allowFileAccess = true
+                javaScriptCanOpenWindowsAutomatically = true
+                loadWithOverviewMode = true
+                useWideViewPort = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+                
+                // Desktop Mode uchun default sozlamalar
+                if (useDesktopMode) {
+                    userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+                    setSupportZoom(true)
+                    builtInZoomControls = true
+                    displayZoomControls = false
+                }
+            }
+            
             loadUrl("https://www.anilo.uz")
         }
     }, update = { webView ->
-        if (useDesktopMode) {
-            webView.settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-            webView.settings.useWideViewPort = true
-            webView.settings.loadWithOverviewMode = true
-            webView.settings.setSupportZoom(true)
-            webView.settings.builtInZoomControls = true
-            webView.settings.displayZoomControls = false
-
-        } else {
-            webView.settings.userAgentString = null // Use default
-            webView.settings.useWideViewPort = false
-            webView.settings.loadWithOverviewMode = false
-
+        // Faqat rejim o'zgargandagina yangilaymiz
+        if (lastDesktopMode.value != useDesktopMode) {
+            lastDesktopMode.value = useDesktopMode
+            webView.settings.apply {
+                if (useDesktopMode) {
+                    userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+                    setSupportZoom(true)
+                    builtInZoomControls = true
+                } else {
+                    userAgentString = null // Default mobile
+                    setSupportZoom(false)
+                    builtInZoomControls = false
+                }
+            }
+            webView.reload()
         }
-        webView.reload()
     })
 }
 
@@ -103,7 +127,9 @@ fun SettingsDialog(
 ) {
     Surface(
         modifier = modifier,
-        shadowElevation = 8.dp
+        shadowElevation = 8.dp,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -111,7 +137,7 @@ fun SettingsDialog(
                     checked = useDesktopMode,
                     onCheckedChange = onDesktopModeChanged
                 )
-                Text("Desktop Mode")
+                Text("Desktop Mode", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

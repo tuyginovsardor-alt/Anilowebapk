@@ -32,7 +32,10 @@ import {
   Code,
   CheckCircle2,
   FileCode2,
-  FolderOpen
+  FolderOpen,
+  Server,
+  Copy,
+  Info
 } from 'lucide-react';
 
 const TEXT_MODEL = 'gemini-3-flash-preview';
@@ -231,7 +234,7 @@ export default function AniloStudio() {
           <NavItem active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} icon={<Bot size={20} />} label="Muloqot" />
           <NavItem active={activeTab === 'live'} onClick={() => setActiveTab('live')} icon={<Activity size={20} />} label="Jonli Ovoz" />
           <NavItem active={activeTab === 'images'} onClick={() => setActiveTab('images')} icon={<ImageIcon size={20} />} label="Tasvir Generator" />
-          <NavItem active={activeTab === 'dev'} onClick={() => setActiveTab('dev')} icon={<Terminal size={20} />} label="Dev Console" />
+          <NavItem active={activeTab === 'dev'} onClick={() => setActiveTab('dev')} icon={<Terminal size={20} />} label="Build Manager" />
         </nav>
 
         <div className="space-y-4">
@@ -288,69 +291,99 @@ export default function AniloStudio() {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 custom-scrollbar">
-          {messages.length === 0 && (
+          {messages.length === 0 && (activeTab !== 'dev') && (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-12 max-w-2xl mx-auto">
-              {activeTab === 'dev' ? (
-                <div className="w-full space-y-10">
-                  <div className="bg-green-500/5 border border-green-500/20 p-8 rounded-[40px] text-left space-y-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center">
-                        <CheckCircle2 className="text-black" size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black uppercase tracking-tight text-green-500">Build Successful!</h3>
-                        <p className="text-xs text-white/40 uppercase tracking-widest">APK fayli muvaffaqiyatli yaratildi</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5">
-                        <div className="flex items-center space-x-3">
-                          <FileCode2 size={18} className="text-amber-500" />
-                          <span className="text-[13px] font-mono text-white/80">app-debug.apk</span>
-                        </div>
-                        <span className="text-[11px] text-white/20 font-mono">~25 MB</span>
-                      </div>
-                      
-                      <div className="bg-white/5 p-5 rounded-2xl space-y-2">
-                        <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-white/40">
-                          <FolderOpen size={12} />
-                          <span>Fayl manzili:</span>
-                        </div>
-                        <code className="block text-[11px] font-mono text-amber-500 break-all bg-black/50 p-3 rounded-lg border border-amber-500/10">
-                          Anilouz2/app/build/outputs/apk/debug/app-debug.apk
-                        </code>
-                      </div>
-                    </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                <Bot size={80} className="text-amber-500 relative z-10" />
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Qanday yordam bera olaman?</h2>
+                <p className="text-sm md:text-base text-white/40 uppercase tracking-[0.4em] font-medium leading-relaxed">
+                  Loyiha, kodlash yoki ijodiy jarayonni boshlaymiz
+                </p>
+              </div>
+            </div>
+          )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <DevActionCard 
-                        title="APK'ni yuklab olish" 
-                        cmd="ls -lh app/build/outputs/apk/debug/app-debug.apk"
-                        desc="Fayl borligini tasdiqlash uchun"
-                      />
-                      <DevActionCard 
-                        title="Tozalash (Clean)" 
-                        cmd="./gradlew clean"
-                        desc="Hamma keshni o'chirib yangidan build qilish"
-                      />
-                    </div>
+          {activeTab === 'dev' && (
+            <div className="w-full max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+              <div className="bg-green-500/5 border border-green-500/20 p-8 rounded-[40px] text-left space-y-8 backdrop-blur-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8">
+                   <ShieldCheck size={100} className="text-green-500/10 -rotate-12" />
+                </div>
+
+                <div className="flex items-center space-x-6 relative z-10">
+                  <div className="w-16 h-16 bg-green-500 rounded-[24px] flex items-center justify-center shadow-2xl shadow-green-500/40">
+                    <CheckCircle2 className="text-black" size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black uppercase tracking-tight text-green-500">Build Successful!</h3>
+                    <p className="text-[13px] text-white/40 uppercase tracking-[0.2em] font-bold">APK fayli o'rnatishga tayyor</p>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                    <Bot size={80} className="text-amber-500 relative z-10" />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+                  <div className="space-y-6">
+                    <div className="bg-black/40 p-6 rounded-3xl border border-white/5 space-y-4">
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center space-x-3">
+                           <FileCode2 size={20} className="text-amber-500" />
+                           <span className="text-[15px] font-black tracking-tight">app-debug.apk</span>
+                         </div>
+                         <span className="text-[11px] font-mono text-white/30 px-3 py-1 bg-white/5 rounded-full">9.1 MB</span>
+                       </div>
+                       
+                       <div className="space-y-3">
+                         <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 flex items-center space-x-2">
+                           <FolderOpen size={12} />
+                           <span>Full System Path</span>
+                         </label>
+                         <div className="relative group">
+                            <code className="block bg-black p-4 rounded-2xl text-[12px] font-mono text-amber-500/90 break-all border border-amber-500/10 group-hover:border-amber-500/30 transition-all">
+                              /home/tuyginovsardor/Anilouz2/app/build/outputs/apk/debug/app-debug.apk
+                            </code>
+                            <button 
+                              onClick={() => navigator.clipboard.writeText('/home/tuyginovsardor/Anilouz2/app/build/outputs/apk/debug/app-debug.apk')}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-white/5 rounded-xl hover:bg-amber-500 hover:text-black transition-all"
+                            >
+                              <Copy size={16} />
+                            </button>
+                         </div>
+                       </div>
+                    </div>
+
+                    <div className="bg-amber-500/5 p-6 rounded-3xl border border-amber-500/10 space-y-4">
+                      <div className="flex items-center space-x-3 text-amber-500">
+                        <Info size={18} />
+                        <span className="text-[11px] font-black uppercase tracking-widest">Google VM Download</span>
+                      </div>
+                      <p className="text-[12px] text-white/50 leading-relaxed">
+                        Google Cloud SSH terminalida yuqoridagi manzilni nusxalab, <b>"Download File"</b> tugmasi orqali kiritsangiz, APK fayli to'g'ridan-to'g'ri kompyuteringizga yuklanadi.
+                      </p>
+                    </div>
                   </div>
+
                   <div className="space-y-4">
-                    <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Qanday yordam bera olaman?</h2>
-                    <p className="text-sm md:text-base text-white/40 uppercase tracking-[0.4em] font-medium leading-relaxed">
-                      Loyiha, kodlash yoki ijodiy jarayonni boshlaymiz
-                    </p>
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">Quick Actions</h4>
+                    <DevActionCard 
+                      title="Verify File" 
+                      cmd="ls -lh /home/tuyginovsardor/Anilouz2/app/build/outputs/apk/debug/app-debug.apk"
+                      desc="Fayl borligini terminalda tekshirish"
+                    />
+                    <DevActionCard 
+                      title="Build Release" 
+                      cmd="./gradlew assembleRelease"
+                      desc="Production uchun optimallashgan APK"
+                    />
+                    <DevActionCard 
+                      title="System Update" 
+                      cmd="yes | ~/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses"
+                      desc="Litsenziyalarni yangilash"
+                    />
                   </div>
-                </>
-              )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -416,7 +449,7 @@ export default function AniloStudio() {
               <textarea 
                 value={input} 
                 onChange={e => setInput(e.target.value)} 
-                placeholder={activeTab === 'dev' ? "Kod yoki terminal buyrug'i so'rang..." : "Anilo Studio bilan muloqotni boshlang..."} 
+                placeholder={activeTab === 'dev' ? "Dev buyruqlari haqida so'rang..." : "Anilo Studio bilan muloqotni boshlang..."} 
                 className="flex-1 bg-transparent border-none outline-none py-5 px-2 text-white resize-none text-[16px] font-medium placeholder:text-white/10 min-h-[60px] max-h-[200px]" 
                 rows={1} 
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
@@ -472,18 +505,18 @@ function DevActionCard({ title, cmd, desc }: { title: string, cmd: string, desc:
   };
 
   return (
-    <div className="bg-[#0f0f0f] border border-white/5 p-6 rounded-[32px] text-left hover:border-amber-500/30 transition-all group">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-500">{title}</h4>
-        <ShieldCheck size={14} className="text-green-500" />
+    <div className="bg-[#0f0f0f] border border-white/5 p-5 rounded-[28px] text-left hover:border-amber-500/30 transition-all group relative overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-500/80">{title}</h4>
+        <Zap size={12} className="text-amber-500/20" />
       </div>
-      <p className="text-[12px] text-white/40 mb-4">{desc}</p>
+      <p className="text-[11px] text-white/30 mb-3 leading-tight">{desc}</p>
       <div className="relative">
-        <code className="block bg-black p-4 rounded-2xl text-[11px] font-mono text-amber-500/80 break-all border border-white/5 group-hover:border-amber-500/20 transition-all">
+        <code className="block bg-black/60 p-3 pr-10 rounded-xl text-[10px] font-mono text-white/60 truncate border border-white/5 group-hover:border-amber-500/20 transition-all">
           {cmd}
         </code>
-        <button onClick={copy} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
-          {copied ? <Zap size={14} className="text-green-500" /> : <Code size={14} className="text-white/40" />}
+        <button onClick={copy} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+          {copied ? <CheckCircle2 size={12} className="text-green-500" /> : <Copy size={12} className="text-white/40" />}
         </button>
       </div>
     </div>

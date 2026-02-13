@@ -1,0 +1,8 @@
+{
+  "name": "Luminary Creative Studio",
+  "description": "An advanced creative workspace powered by Google Gemini, featuring real-time search-grounded chat, high-fidelity image generation, and state-of-the-art video synthesis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
